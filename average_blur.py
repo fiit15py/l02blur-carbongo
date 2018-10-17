@@ -2,60 +2,36 @@ from PIL import Image
 from math import pi, log, exp
 import numpy as np
 
-def blur_py(img, r):
+img = Image.open('darwin.png')
+img.load()
+img
+
+print(img.size)
+print(img.mode)
+
+data = img.getdata()
+print(data[1])
+a = np.array(img, dtype=np.uint8).reshape(img.size[::-1])
+print(a[0,1])
+
+b = a[900:1350, 900:1500]
+pic = Image.fromarray(b) # создаем новый объект Image из массива фрагмента
+pic
+
+import cv2
+img = cv2.imread('darwin.png', cv2.IMREAD_GRAYSCALE)
+Image.fromarray(img[900:1350, 900:1500])
+
+def average_blur(img, r):
     w, h = img.size
     a = np.array(img.getdata(), dtype=np.uint8).reshape(h, w)
     b = np.zeros((h,w), dtype=np.uint8)
-    for i in range(h):
-        for j in range(w):
+    for i in range(r, h - r):
+        for j in range(r, w - r):
             s = 0.
-            up, bt = max(i-r,0), min(i+r+1,h)
-            lf, rt = max(j-r,0), min(j+r+1,w)
-            n = (bt-up)*(rt-lf)
-            for y in range(up,bt):
-                for x in range(lf,rt):
-                    s += a[y,x]
-            b[i,j] = s / n
+            for x in range(-r, r):
+                for y in range(-r, r):
+                    s+=a[i+x,j+y]
+            b[i,j] = s / (2*r+1)**2
     return Image.fromarray(b)
-
-
-def blur_np(img, r):
-    w, h = img.size
-    a = np.array(img.getdata(), dtype=np.uint8)\
-                .reshape(h, w)
-    b = np.zeros((h,w), dtype=np.uint8)
-    for i in range(h):
-        for j in range(w):
-            up, bt = max(i-r,0), min(i+r+1,h)
-            lf, rt = max(j-r,0), min(j+r+1,w)
-            b[i,j] = np.average(a[up:bt, lf:rt])
-    return Image.fromarray(b)
-
-
-def blur_np(img, r):
-    w, h = img.size
-    a = np.array(img.getdata(), dtype=np.uint8)\
-                .reshape(h, w)
-    b = np.zeros((h,w), dtype=np.uint8)
-    for i in range(h):
-        for j in range(w):
-            up, bt = max(i-r,0), min(i+r+1,h)
-            lf, rt = max(j-r,0), min(j+r+1,w)
-            b[i,j] = np.average(a[up:bt, lf:rt])
-    return Image.fromarray(b)
-
-
-img = Image.open('darwin.png')
-img.load()
-
-print("Image size is", img.size)
-print("Image mode is", img.mode)
-
-print("getdata[1]=", img.getdata()[1])
-a = np.array(img, dtype=np.uint8).reshape(img.size[::-1])
-print("a[0,1]=", a[0,1])
-
-b = a[900:1150, 900:1100]
-pic = Image.fromarray(b)
-
-blur_np(pic,16).show()
+average_blur(Image.fromarray(img[900:1350, 900:1500]), 7)
